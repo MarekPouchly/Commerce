@@ -1,0 +1,81 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% if alert %}
+        {% if updated %}
+            <div class="alert alert-success" role="alert">
+                {{ alert }}
+            </div>
+        {% else %}
+            <div class="alert alert-warning" role="alert">
+                {{ alert }}
+            </div>
+        {% endif %}
+    {% endif %}
+        
+    <h1>Listing: {{ listing.title }}</h1>
+    
+    {% if user.is_authenticated and listing.isActive %}
+        {% if isOwner %}
+            <form action="{% url 'closeListing' listing.id %}" method="POST" class="mb-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Close listing</button>
+            </form>
+        {% endif %}
+
+        {% if listingInWatchlist %}
+            <form action="{% url 'removeWatchlist' id=listing.id %}" method="POST" class="mb-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Remove from Watchlist</button>
+            </form>
+        {% else %}
+            <form action="{% url 'addWatchlist' id=listing.id %}" method="POST" class="mb-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Add to Watchlist</button>
+            </form>
+        {% endif %}
+    {% endif %}
+    
+    {% if listing.imageUrl %}
+        <img src="{{ listing.imageUrl }}" alt="{{ listing.title }}" class="img-thumbnail rounded">
+    {% else %}
+        <img src="https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg" alt="No image" class="img-thumbnail rounded">
+    {% endif %}
+    <p>{{ listing.description }}</p>
+    <h1>€{{ listing.bid.bid }}</h1>
+
+    {% if user.is_authenticated %}
+        <!-- Make a bid -->
+        <h3>Make a Bid:</h3>
+        <form action="{% url 'makeBid' listing.id %}" method="POST">
+            {% csrf_token %}
+            <input type="number" name="make_a_bid" min="0" placeholder="Bid">
+            <input type="submit" value="Place a bid" class="btn btn-success">
+        </form>
+
+        <hr>
+
+        <!-- Add comment -->
+        <h3>Comments section:</h3>
+        <form action="{% url 'addComment' listing.id %}" method="POST">
+            {% csrf_token %}
+            <label for="addComment">Add Comment:</label>
+            <input type="text" name="addComment">
+            <input type="submit" value="Submit" class="btn btn-success">
+        </form>
+    {% endif %}
+
+    {% for comment in comments %}
+        <ul class="list-group">
+            <li class="list-group-item">
+                {{comment.message }}
+                <br>
+                Posted by: <strong>{{ comment.author }}</strong>
+            </li>
+
+        </ul>
+    {% endfor %}
+
+{% endblock %}
+
